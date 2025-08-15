@@ -1,0 +1,298 @@
+---
+interface Image {
+	src: string;
+	alt?: string;
+	caption?: string;
+}
+
+interface Props {
+	images: Image[];
+	class?: string;
+}
+
+const { images, class: className } = Astro.props;
+const carouselId = `carousel-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class={`carousel ${className || ''}`} data-carousel-id={carouselId}>
+	<div class="carousel-container">
+		<div class="carousel-track" data-track>
+			{images.map((image, index) => (
+				<div class="carousel-slide" data-slide={index}>
+					<img 
+						src={image.src} 
+						alt={image.alt || ''} 
+						loading="lazy" 
+						decoding="async"
+					/>
+					{image.caption && (
+						<div class="carousel-caption">
+							{image.caption}
+						</div>
+					)}
+				</div>
+			))}
+		</div>
+		
+		{images.length > 1 && (
+			<>
+				<button class="carousel-btn carousel-btn-prev" data-prev>
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+				<button class="carousel-btn carousel-btn-next" data-next>
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</>
+		)}
+	</div>
+	
+	{images.length > 1 && (
+		<div class="carousel-indicators">
+			{images.map((_, index) => (
+				<button 
+					class="carousel-indicator" 
+					data-indicator={index}
+					aria-label={`Go to slide ${index + 1}`}
+				></button>
+			))}
+		</div>
+	)}
+</div>
+
+<style>
+	.carousel {
+		position: relative;
+		width: 100%;
+		max-width: 100%;
+		margin: 0 auto;
+	}
+
+	.carousel-container {
+		position: relative;
+		overflow: hidden;
+		border-radius: 1.5rem;
+		box-shadow: var(--shadow-md);
+		background: var(--gradient-subtle);
+		border: 1px solid var(--gray-800);
+	}
+
+	.carousel-track {
+		display: flex;
+		transition: transform 0.3s ease-in-out;
+		will-change: transform;
+	}
+
+	.carousel-slide {
+		flex: 0 0 100%;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.carousel-slide img {
+		width: 100%;
+		height: auto;
+		max-height: 60vh;
+		object-fit: cover;
+		display: block;
+	}
+
+	.carousel-caption {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+		color: white;
+		padding: 2rem 1.5rem 1.5rem;
+		font-size: var(--text-sm);
+		line-height: 1.4;
+	}
+
+	.carousel-btn {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		background: rgba(0, 0, 0, 0.5);
+		color: white;
+		border: none;
+		width: 3rem;
+		height: 3rem;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		z-index: 2;
+		opacity: 0.8;
+	}
+
+	.carousel-btn:hover {
+		background: rgba(0, 0, 0, 0.8);
+		opacity: 1;
+		transform: translateY(-50%) scale(1.1);
+	}
+
+	.carousel-btn-prev {
+		left: 1rem;
+	}
+
+	.carousel-btn-next {
+		right: 1rem;
+	}
+
+	.carousel-indicators {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+
+	.carousel-indicator {
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 50%;
+		border: none;
+		background: var(--gray-600);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		opacity: 0.6;
+	}
+
+	.carousel-indicator:hover,
+	.carousel-indicator.active {
+		background: var(--accent-regular);
+		opacity: 1;
+		transform: scale(1.2);
+	}
+
+	@media (max-width: 50em) {
+		.carousel-btn {
+			width: 2.5rem;
+			height: 2.5rem;
+		}
+
+		.carousel-btn-prev {
+			left: 0.5rem;
+		}
+
+		.carousel-btn-next {
+			right: 0.5rem;
+		}
+
+		.carousel-caption {
+			padding: 1.5rem 1rem 1rem;
+			font-size: var(--text-xs);
+		}
+	}
+</style>
+
+<script>
+	class Carousel {
+		carousel: HTMLElement;
+		track: HTMLElement | null;
+		slides: NodeListOf<Element>;
+		prevBtn: HTMLElement | null;
+		nextBtn: HTMLElement | null;
+		indicators: NodeListOf<Element>;
+		currentSlide: number;
+		totalSlides: number;
+		
+		constructor(element: HTMLElement) {
+			this.carousel = element;
+			this.track = element.querySelector('[data-track]');
+			this.slides = element.querySelectorAll('[data-slide]');
+			this.prevBtn = element.querySelector('[data-prev]');
+			this.nextBtn = element.querySelector('[data-next]');
+			this.indicators = element.querySelectorAll('[data-indicator]');
+			
+			this.currentSlide = 0;
+			this.totalSlides = this.slides.length;
+			
+			this.init();
+		}
+		
+		init() {
+			if (this.totalSlides <= 1) return;
+			
+			// Event listeners
+			this.prevBtn?.addEventListener('click', () => this.prevSlide());
+			this.nextBtn?.addEventListener('click', () => this.nextSlide());
+			
+			this.indicators.forEach((indicator: Element, index: number) => {
+				indicator.addEventListener('click', () => this.goToSlide(index));
+			});
+			
+			// Keyboard navigation
+			this.carousel.addEventListener('keydown', (e: KeyboardEvent) => {
+				if (e.key === 'ArrowLeft') this.prevSlide();
+				if (e.key === 'ArrowRight') this.nextSlide();
+			});
+			
+			// Touch/swipe support
+			let startX = 0;
+			let endX = 0;
+			
+			if (this.track) {
+				this.track.addEventListener('touchstart', (e: TouchEvent) => {
+					startX = e.touches[0].clientX;
+				});
+
+				this.track.addEventListener('touchend', (e: TouchEvent) => {
+					endX = e.changedTouches[0].clientX;
+					const diffX = startX - endX;
+					
+					if (Math.abs(diffX) > 50) {
+						if (diffX > 0) {
+							this.nextSlide();
+						} else {
+							this.prevSlide();
+						}
+					}
+				});
+			}
+			
+			this.updateIndicators();
+		}
+		
+		prevSlide() {
+			this.currentSlide = this.currentSlide === 0 ? this.totalSlides - 1 : this.currentSlide - 1;
+			this.updateCarousel();
+		}
+		
+		nextSlide() {
+			this.currentSlide = this.currentSlide === this.totalSlides - 1 ? 0 : this.currentSlide + 1;
+			this.updateCarousel();
+		}
+		
+		goToSlide(index: number) {
+			this.currentSlide = index;
+			this.updateCarousel();
+		}
+		
+		updateCarousel() {
+			const translateX = -this.currentSlide * 100;
+			if (this.track) {
+				this.track.style.transform = `translateX(${translateX}%)`;
+			}
+			this.updateIndicators();
+		}
+		
+		updateIndicators() {
+			this.indicators.forEach((indicator: Element, index: number) => {
+				(indicator as HTMLElement).classList.toggle('active', index === this.currentSlide);
+			});
+		}
+	}
+	
+	// Initialize all carousels on the page
+	document.addEventListener('DOMContentLoaded', () => {
+		const carousels = document.querySelectorAll('.carousel');
+		carousels.forEach(carousel => new Carousel(carousel as HTMLElement));
+	});
+</script>

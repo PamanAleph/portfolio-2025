@@ -10,8 +10,14 @@ export const collections = {
 			description: z.string(),
 			publishDate: z.coerce.date(),
 			tags: z.array(z.string()),
-			img: z.string(),
+			// Support both single image (backward compatibility) and multiple images
+			img: z.string().optional(),
 			img_alt: z.string().optional(),
+			images: z.array(z.object({
+				src: z.string(),
+				alt: z.string().optional(),
+				caption: z.string().optional(),
+			})).optional(),
 		}),
 	}),
 };
