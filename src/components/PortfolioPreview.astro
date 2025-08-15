@@ -6,11 +6,18 @@ interface Props {
 }
 
 const { data, id } = Astro.props.project;
+
+// Get the first image for preview - support both single image and multiple images format
+const previewImage = data.images && data.images.length > 0 
+	? { src: data.images[0].src, alt: data.images[0].alt || '' }
+	: { src: data.img, alt: data.img_alt || '' };
 ---
 
 <a class="card" href={`/work/${id}`}>
 	<span class="title">{data.title}</span>
-	<img src={data.img} alt={data.img_alt || ''} loading="lazy" decoding="async" />
+	{previewImage.src && (
+		<img src={previewImage.src} alt={previewImage.alt} loading="lazy" decoding="async" />
+	)}
 </a>
 
 <style>
