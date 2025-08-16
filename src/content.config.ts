@@ -18,6 +18,8 @@ export const collections = {
 				alt: z.string().optional(),
 				caption: z.string().optional(),
 			})).optional(),
+			projectUrl: z.string().optional(),
+			githubUrl: z.string().optional(),
 		}),
 	}),
 	blog: defineCollection({
