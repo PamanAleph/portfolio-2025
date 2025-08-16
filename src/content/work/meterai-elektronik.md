@@ -43,7 +43,7 @@ Technical implementation details are conceptual and non-confidential (without me
 
 ## Key Features
 
-### 1. User Project (Separate Repository)
+### 1. User Project
 
 - **Landing Page**: Information and guides on using the e-stamp.
 - **User Authentication**: Registration, login, password recovery (without API details).
@@ -51,7 +51,7 @@ Technical implementation details are conceptual and non-confidential (without me
 - **Stamping Process**: Upload PDF, interactive viewer to place the digital stamp, process confirmation.
 - **Transaction & Document History**: View history and download stamped documents.
 
-#### User Flow (simplified, without API)
+#### User Flow
 
 1.  Login/register → access dashboard.
 2.  Purchase quota → complete payment.
@@ -59,13 +59,13 @@ Technical implementation details are conceptual and non-confidential (without me
 4.  Place the visual e-stamp in the viewer.
 5.  Confirm → system processes → download the result from history.
 
-### 2. Admin Project (Separate Repository)
+### 2. Admin Project
 
 - **Quota Management**: Create/view/manage quota allocation per user/entity.
 - **Activity Monitoring**: Track service usage to identify patterns/anomalies.
 - **Statistics Dashboard**: Visualize aggregate metrics (usage, performance, revenue) via charts & tables.
 
-#### Admin Flow (simplified, without API)
+#### Admin Flow
 
 1.  Login → main dashboard with a summary.
 2.  Open “Quota Management” → list + filter data.
